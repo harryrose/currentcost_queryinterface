@@ -1,47 +1,46 @@
 <?php
+	error_reporting(E_ALL);
+
+	$dbClassName = "MongoDatabase";
+	$querySelectorBuilderName = "default";
+
+
+	class ObjectRegister 
+	{
+		private $data;
+
+		public function __construct()
+		{
+			$this->data = Array();
+		}
+
+		public function __set($key,$value)
+		{
+			$this->data[$key] = $value;
+		}
+
+		public function __get($key)
+		{
+			if(isset($this->data[$key]))
+			{
+				return new $this->data[$key];
+			}
+			else
+			{
+				return null;
+			}
+		}
+	}
+
+	$outputClassRegister = new ObjectRegister();
+	$querySelectorBuilderRegister = new ObjectRegister();
+	
 	include_once('classes/Database.php');
 	include_once('classes/OutputClass.php');
 	include_once('classes/QuerySelectors.php');
 	include_once('classes/QuerySelectorBuilder.php');
 	include_once('classes/SensorData.php');
-
-	$dbClassName = "Mongo";
-	$querySelectorName = "default";
-
-	$registeredOutputTypes = Array();
-
-	function RegisterOutputType($typestring, $className)
-	{
-		global $registeredOutputTypes;
-		$registeredOutputTypes[$typestring] = $className;
-	}
-
-	function GetOutputTypeInstance($typestring)
-	{
-		global $registeredOutputTypes;
-		if(isset($registeredOutputTypes[$typestring]))
-		{
-			return new $registeredOutputTypes[$typeString];
-		}
-		return null;
-	}
-
-	$registeredQuerySelectorBuilders = Array();
 	
-	function RegisterQuerySelectorBuilder($idstring,$className)
-	{
-		global $registeredQuerySelectorBuilders;
-		$registeredQuerySelectorBuilder[$idstring] = $className;
-	}
-
-	function GetQuerySelectorBuilerInstance($idstring)
-	{
-		global $registeredQuerySelectorBuilders;
-		if(isset($registeredQuerySelectorBuilders[$idstring]))
-			return new $registeredQuerySelectorBuilders[$idstring];
-		else return null;
-	}
-
 	function IncludeDirectory($dir)
 	{
 		foreach(glob("$dir/*.php") as $file)
@@ -57,11 +56,11 @@
 	
 	$outputType = null;
 	if(isset($_GET['out']))
-		$outputType = GetOutputTypeInstance($_GET['out']);
+		$outputType = $outputClassRegister->$_GET['out'];
 	else
 		throw new Exception("Please define an output type using get variable 'out'.");
 
-	$querySelectorBuilder = GetQuerySelectorBuilderInstance($querySelectorName);
+	$querySelectorBuilder = $querySelectorBuilderRegister->$querySelectorBuilderName;
 
 	$querySelector = $querySelectorBuilder->BuildQuerySelector();
 	

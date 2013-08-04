@@ -1,28 +1,17 @@
 <?php
 
-	public class AggregationPeriods
+	class AggregationPeriods
 	{
-		const None   = new AggregationPeriods(0);
-		const Second = new AggregationPeriods(1);
-		const Minute = new AggregationPeriods(2);
-		const Hour   = new AggregationPeriods(3);
-		const Day    = new AggregationPeriods(4);
-		const Month  = new AggregationPeriods(5);
-		const Year   = new AggregationPeriods(6);
-
-		private $value;
-
-		private __construct($value)
-		{
-			$this->value = $value;
-		}
-
-		public __get($key) {
-			return $this->value;
-		}
+		const None   = 0;
+		const Second = 1;
+		const Minute = 2;
+		const Hour   = 3;
+		const Day    = 4;
+		const Month  = 5;
+		const Year   = 6;
 	}
 
-	public class QuerySelector
+	class QuerySelector
 	{
 		private $dataTypeEqualTo = null;
 
@@ -36,8 +25,8 @@
 		private $timeLessThan = null;
 		private $timeEqualTo = null;
 
-		private $limit = null;
-		private $skip = null;
+		private $limit = 0;
+		private $skip = 0;
 		private $aggregation = AggregationPeriods::None;
 
 		public function WithDataType($type)
@@ -114,10 +103,6 @@
 
 		public function WithAggregation($aggregation)
 		{
-			if(!$aggregation instanceof AggregationPeriods)
-			{
-				throw new Exception("Aggregation period '$aggregation' is not a valid aggregation period.");
-			}
 			$this->aggregation = $aggregation;
 		}
 
