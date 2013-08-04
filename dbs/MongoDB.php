@@ -13,43 +13,49 @@
 
 			$query = Array();
 
-			if( $val = $selector->GetDataType() != null)
+			if(( $val = $selector->GetDataType() ) != null)
 			{
 				$query["type"] = (string) $val ;
 			}
 
-			if( $val = $selector->GetDataValueGreaterThan() != null)
+			if(( $val = $selector->GetSensorIdEqualTo() ) != null)
+			{
+				$query["sensor"] = (int) $val;
+			}
+
+			if(( $val = $selector->GetDataValueGreaterThan() ) != null)
 			{
 				$query["value"]['$gt'] = (double) $val;
 			}
 
-			if( $val = $selector->GetDataValueLessThan() != null)
+			if(( $val = $selector->GetDataValueLessThan() ) != null)
 			{
 				$query["value"]['$lt'] = (double) $val;
 			}
 
-			if( $val = $selector->GetDataValueEqualTo() != null)
+			if(( $val = $selector->GetDataValueEqualTo() ) != null)
 			{
 				$query["value"] = (double) $val;
 			}
 
-			if( $val = $selector->GetTimeGreaterThan() != null)
+			if(( $val = $selector->GetTimeGreaterThan() ) != null)
 			{
 				$query["time"]['$gt'] = new MongoDate($val->getTimestamp());
 			}
 
-			if( $val = $selector->GetTimeLessThan() != null)
+			if(( $val = $selector->GetTimeLessThan() ) != null)
 			{
 				$query["time"]['$lt'] = new MongoDate((int)$val->getTimeStamp());
 			}
 
-			if( $val = $selector->GetTimeEqualTo() != null)
+			if(( $val = $selector->GetTimeEqualTo() ) != null)
 			{
 				$query["time"] = new MongoDate((int)$val->getTimeStamp());
 			}
 
 			$limit = $selector->GetLimit();
 			$skip = $selector->GetSkip();
+
 
 			$cursor = $collection->find($query)->sort(array("time" => -1))->skip($skip)->limit($limit);
 

@@ -69,7 +69,6 @@
 
 				$qs->WithAggregation($aggregation);
 			}
-
 			return $qs;
 		}
 	}
