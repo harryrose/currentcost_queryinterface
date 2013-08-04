@@ -1,55 +1,76 @@
-<html>
-	<head>
-		<title>Graphs!</title>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript">
+<?php
+	include_once('classes/Database.php');
+	include_once('classes/OutputClass.php');
+	include_once('classes/QuerySelectors.php');
+	include_once('classes/QuerySelectorBuilder.php');
+	include_once('classes/SensorData.php');
 
-		      // Load the Visualization API and the piechart package.
-     		 google.load('visualization', '1.0', {'packages':['corechart']});
-		</script>
-		<script src="graphs.js"></script>
+	$dbClassName = "Mongo";
+	$querySelectorName = "default";
 
-		<script type='text/javascript'>
-			$(document).ready(function() {
-				updatePlotsTimer();
-				});
+	$registeredOutputTypes = Array();
 
+	function RegisterOutputType($typestring, $className)
+	{
+		global $registeredOutputTypes;
+		$registeredOutputTypes[$typestring] = $className;
+	}
 
-			var updatePlots = function()
-			{
-				plotElectricityGraph("elecchart24","minute",1);
-				plotTemperatureGraph("tempchart24","minute",1);
-				plotHumidityGraph("humidity24","minute",1);
+	function GetOutputTypeInstance($typestring)
+	{
+		global $registeredOutputTypes;
+		if(isset($registeredOutputTypes[$typestring]))
+		{
+			return new $registeredOutputTypes[$typeString];
+		}
+		return null;
+	}
 
-				plotElectricityGraph("elecchart7","hour",7);
-				plotTemperatureGraph("tempchart7","hour",7);
-				plotHumidityGraph("humidity7","hour",7);
+	$registeredQuerySelectorBuilders = Array();
+	
+	function RegisterQuerySelectorBuilder($idstring,$className)
+	{
+		global $registeredQuerySelectorBuilders;
+		$registeredQuerySelectorBuilder[$idstring] = $className;
+	}
 
-				plotElectricityWeekOverlay("elecoverlay");
-				plotTemperatureWeekOverlay("tempoverlay");
-			}
-			
-			var updatePlotsTimer = function()
-			{
-				updatePlots();
-				setTimeout(updatePlotsTimer,60000);
-			}
+	function GetQuerySelectorBuilerInstance($idstring)
+	{
+		global $registeredQuerySelectorBuilders;
+		if(isset($registeredQuerySelectorBuilders[$idstring]))
+			return new $registeredQuerySelectorBuilders[$idstring];
+		else return null;
+	}
 
-		</script>
-	</head>
+	function IncludeDirectory($dir)
+	{
+		foreach(glob("$dir/*.php") as $file)
+		{
+			include_once($file);
+		}
+	}
 
-	<body>
-		<h2>Last 24 Hours</h2>
-		<div id='elecchart24'></div>
-		<div id='tempchart24'></div>
-		<div id='humidity24'></div>
+	IncludeDirectory("dbs");
+	IncludeDirectory("outputTypes");
 
-		<h2>Last Week</h2>
-		<div id='elecoverlay'></div>
-		<div id='tempoverlay'></div>
-		<div id='elecchart7'></div>
-		<div id='tempchart7'></div>
-		<div id='humidity7'></div>
-	</body>
-</html>
+	$database = new $dbClassName;
+	
+	$outputType = null;
+	if(isset($_GET['out']))
+		$outputType = GetOutputTypeInstance($_GET['out']);
+	else
+		throw new Exception("Please define an output type using get variable 'out'.");
+
+	$querySelectorBuilder = GetQuerySelectorBuilderInstance($querySelectorName);
+
+	$querySelector = $querySelectorBuilder->BuildQuerySelector();
+	
+	$mime = $outputType->GetMimeString();
+	header("Content-type: $mime");
+	
+	$data = $database->GetData($querySelector);
+	
+	$outputType->BeginOutput();
+	$outputType->OutputSensorDatas($data);
+	$outputType->EndOutput();
+?>
