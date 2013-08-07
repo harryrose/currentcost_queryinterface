@@ -7,7 +7,7 @@
 
 			$db = $m -> sensordata;
 
-			$collection = $db -> sensordata;
+			$collection = $db -> sensordata2;
 
 			// now time to build the query...
 
@@ -15,12 +15,12 @@
 
 			if(( $val = $selector->GetDataType() ) != null)
 			{
-				$query["type"] = (string) $val ;
+				$query["_id.type"] = (string) $val ;
 			}
 
 			if(( $val = $selector->GetSensorIdEqualTo() ) != null)
 			{
-				$query["sensor"] = (int) $val;
+				$query["_id.sensor"] = (int) $val;
 			}
 
 			if(( $val = $selector->GetDataValueGreaterThan() ) != null)
@@ -40,24 +40,24 @@
 
 			if(( $val = $selector->GetTimeGreaterThan() ) != null)
 			{
-				$query["time"]['$gt'] = new MongoDate($val->getTimestamp());
+				$query["_id.time"]['$gt'] = new MongoDate($val->getTimestamp());
 			}
 
 			if(( $val = $selector->GetTimeLessThan() ) != null)
 			{
-				$query["time"]['$lt'] = new MongoDate((int)$val->getTimeStamp());
+				$query["_id.time"]['$lt'] = new MongoDate((int)$val->getTimeStamp());
 			}
 
 			if(( $val = $selector->GetTimeEqualTo() ) != null)
 			{
-				$query["time"] = new MongoDate((int)$val->getTimeStamp());
+				$query["_id.time"] = new MongoDate((int)$val->getTimeStamp());
 			}
 
 			$limit = $selector->GetLimit();
 			$skip = $selector->GetSkip();
 
 
-			$cursor = $collection->find($query)->sort(array("time" => -1))->skip($skip)->limit($limit);
+			$cursor = $collection->find($query)->sort(array("_id.time" => -1))->skip($skip)->limit($limit);
 
 			$out = Array();
 
@@ -66,8 +66,8 @@
 				$cursor->next();
 				$row = $cursor->current();
 				$dateTime = (new DateTime());
-				$dateTime = $dateTime->setTimestamp($row["time"]->sec);
-				array_push($out,new SensorData($row["type"],$dateTime,$row["sensor"],$row["value"]));
+				$dateTime = $dateTime->setTimestamp($row["_id"]["time"]->sec);
+				array_push($out,new SensorData($row["_id"]["type"],$dateTime,$row["_id"]["sensor"],$row["value"]));
 			}
 		
 			return $out;
