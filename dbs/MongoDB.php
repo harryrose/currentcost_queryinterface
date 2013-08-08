@@ -12,6 +12,29 @@
 			// now time to build the query...
 
 			$query = Array();
+		
+			$tblPrefix = "value.";
+			switch($selector->GetAggregation())
+			{
+				case AggregationPeriods::Minute:
+					$collection = $collection -> minutely;
+					break;
+
+				case AggregationPeriods::Hour:
+					$collection = $collection -> hourly;
+					break;
+
+				case AggregationPeriods::Day:
+					$collection = $collection -> daily;
+					break;
+
+				case AggregationPeriods::Month:
+					$collection = $collection -> month;
+					break;
+				
+				default:
+					$tblPrefix = '';
+			}
 
 			if(( $val = $selector->GetDataType() ) != null)
 			{
@@ -25,17 +48,17 @@
 
 			if(( $val = $selector->GetDataValueGreaterThan() ) != null)
 			{
-				$query["value"]['$gt'] = (double) $val;
+				$query[$tblPrefix."value"]['$gt'] = (double) $val;
 			}
 
 			if(( $val = $selector->GetDataValueLessThan() ) != null)
 			{
-				$query["value"]['$lt'] = (double) $val;
+				$query[$tblPrefix."value"]['$lt'] = (double) $val;
 			}
 
 			if(( $val = $selector->GetDataValueEqualTo() ) != null)
 			{
-				$query["value"] = (double) $val;
+				$query[$tblPrefix."value"] = (double) $val;
 			}
 
 			if(( $val = $selector->GetTimeGreaterThan() ) != null)
@@ -53,6 +76,7 @@
 				$query["_id.time"] = new MongoDate((int)$val->getTimeStamp());
 			}
 
+			
 			$limit = $selector->GetLimit();
 			$skip = $selector->GetSkip();
 
@@ -65,9 +89,13 @@
 			{
 				$cursor->next();
 				$row = $cursor->current();
+				//Map reduce...  There is probably a way around this.
+				$value = $tblPrefix == '' ? $row["value"] : $row["value"]["value"];
+
 				$dateTime = (new DateTime());
 				$dateTime = $dateTime->setTimestamp($row["_id"]["time"]->sec);
-				array_push($out,new SensorData($row["_id"]["type"],$dateTime,$row["_id"]["sensor"],$row["value"]));
+				
+				array_push($out,new SensorData($row["_id"]["type"],$dateTime,$row["_id"]["sensor"],$value));
 			}
 		
 			return $out;
