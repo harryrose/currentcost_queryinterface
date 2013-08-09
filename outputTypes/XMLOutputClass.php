@@ -31,6 +31,14 @@
 			}
 			echo "</sensordata>";
 		}
+
+		public function OutputException($e)
+		{
+			echo "<exception>";
+				echo "<status>".$e->GetStatus()."</status>";
+				echo "<message>".htmlspecialchars($e->GetMessage())."</message>";
+			echo "</exception>";
+		}
 	}
 
 	global $outputClassRegister;

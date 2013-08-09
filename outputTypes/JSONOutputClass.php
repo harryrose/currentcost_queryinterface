@@ -34,6 +34,11 @@
 			}
 			echo "]";
 		}
+
+		public function OutputException($e)
+		{
+			echo "{ \"error\": ".$e->GetStatus().", \"message\": \"".addslashes($e->GetMessage())."\"}";
+		}
 	}
 
 	global $outputClassRegister;

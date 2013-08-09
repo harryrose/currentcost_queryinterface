@@ -57,6 +57,11 @@
 				echo "\n";
 			}
 		}
+
+		public function OutputException($e)
+		{
+			echo $e->GetMessage();
+		}
 	}
 
 	global $outputClassRegister;
