@@ -19,7 +19,7 @@
 		public function EmitStatus()
 		{
 			if(!defined('http_response_code'))
-				header("HTTP/1.0 {$this->status}");
+				header(':',true,$this->status);
 			else
 				http_response_code($this->status);
 	

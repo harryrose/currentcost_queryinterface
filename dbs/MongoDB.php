@@ -1,13 +1,88 @@
 <?php
-	class MongoDatabase implements Database
+	class MongoDatabase implements SensorDatabase, UserDatabase
 	{
-		public function GetData($selector)
+		private function GetDatabase()
 		{
 			$m = new Mongo("mongodb://localhost");
+			return $m -> sensordata;
+		}
+		
+		private function GetUserCollection()
+		{
+			return $this->GetDatabase()->users;
+		}
+		
+		private function GetSensorDataCollection()
+		{
+			return $this->GetDatabase()->sensordata2;
+		}
 
-			$db = $m -> sensordata;
+		public function AddUser($User)
+		{
+			if($this->UserExists($User))
+				throw new UserExistsException($User->GetUsername());
 
-			$collection = $db -> sensordata2;
+			$users = $this->GetUserCollection();
+			
+			$user = array();
+
+			$user["_id"] = $User->GetUsername();
+			$user["password"] = $User->GetPassword();
+			$user["salt"] = $User->GetSalt();
+
+			$users->save($user);
+		}
+
+		public function RemoveUser($UserOrUserID)
+		{
+			// Don't implement this yet... No need for it.
+		}
+
+		public function GetUsers()
+		{
+			// TODO: For future
+		}
+
+		public function GetUser($UserID)
+		{
+			$users = $this->GetUserCollection();
+
+			$userCursor = $users->find(array( "_id" => $UserID));
+
+			if($userCursor->hasNext())
+			{
+				$userCursor->next();
+				$row = $userCursor -> current();
+
+				return new User($user["_id"],$user["password"],$user["salt"]);
+			}
+			else
+			{
+				throw new NoSuchUserException($UserID);
+			}
+		}
+
+		public function UserExists($UserOrUserID)
+		{
+			$users = $this->GetUserCollection();
+			$username = "";
+			if($UserOrUserID instanceof User)
+			{
+				$username = $UserOrUserID->GetUsername();
+			}
+			else
+			{
+				$username = $UserOrUserID;
+			}
+
+			$userCursor = $users->find(array("_id" => $username));
+
+			return $userCursor -> hasNext();
+		}
+
+		public function GetData($selector)
+		{
+			$collection = $this->GetSensorDataCollection();
 
 			// now time to build the query...
 

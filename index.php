@@ -1,7 +1,7 @@
 <?php
-
-	$dbClassName = "MongoDatabase";
-	$querySelectorBuilderName = "default";
+ob_start();
+	error_reporting(E_ALL);
+	include_once('config.php');
 
 	class ObjectRegister 
 	{
@@ -32,33 +32,14 @@
 
 	$outputClassRegister = new ObjectRegister();
 	$querySelectorBuilderRegister = new ObjectRegister();
-	
+	$authEngineRegister = new ObjectRegister();
+
 	$database = null;
 	$outputType = null;
 	
-	function handle_shutdown()
-	{
-		global $outputType;
-		$error = error_get_last();
-		
-		if($error == null)
-			return;
-
-		$ex = new WebException(500,$error['message']);
-		$ex->EmitStatus();
-		if($outputType != null)
-			$outputType->OutputException($ex);
-		else
-		{
-			header('Content-type: text/plain');
-			echo $ex->GetMessage();
-		}
-		exit;
-	}
-
-	register_shutdown_function('handle_shutdown');
-
 	include_once('classes/Database.php');
+	include_once('classes/AuthEngine.php');
+	include_once('classes/User.php');
 	include_once('classes/OutputClass.php');
 	include_once('classes/QuerySelectors.php');
 	include_once('classes/QuerySelectorBuilder.php');
@@ -79,9 +60,19 @@
 	{
 		IncludeDirectory("dbs");
 		IncludeDirectory("outputTypes");
+		IncludeDirectory("auth");
 
-		$database = new $dbClassName;
-	
+		$sensorDatabase = new $sensorDbClassName;
+		$userDatabase = new $userDbClassName;
+		$authEngine = new $authEngineClassName;
+		$authEngine->Init($userDatabase);
+
+		if(!$authEngine->IsAuthorized())
+		{
+			$authEngine->EmitHeaders();
+			throw new WebException(401,$authEngine->GetHelpString());
+		}
+
 		if(isset($_GET['out']))
 			$outputType = $outputClassRegister->$_GET['out'];
 		else
@@ -103,7 +94,7 @@
 			$mime = $outputType->GetMimeString();
 			header("Content-type: $mime");
 	
-			$data = $database->GetData($querySelector);
+			$data = $sensorDatabase->GetData($querySelector);
 	
 			$outputType->BeginOutput();
 			$outputType->OutputSensorDatas($data);
@@ -121,4 +112,5 @@
 		header("Content-type: text/plain");
 		echo $e->GetMessage();
 	}
+ob_end_flush();
 ?>
