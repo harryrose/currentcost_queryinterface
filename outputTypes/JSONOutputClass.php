@@ -23,9 +23,9 @@
 			
 			foreach($data as $row)
 			{
-				if(!$first) echo ",";
-				if($row->getValue() != "NAN")
+				if(!is_nan($row->getValue()))
 				{
+					if(!$first) echo ",";
 					$first = 0;
 					echo "{";
 						echo "\"time\": \"".$row->getTime()->format('c')."\",";
