@@ -24,13 +24,16 @@
 			foreach($data as $row)
 			{
 				if(!$first) echo ",";
-				$first = 0;
-				echo "{";
-					echo "\"time\": \"".$row->getTime()->format('c')."\",";
-					echo "\"type\": \"".$row->getType()."\",";
-					echo "\"sensor\": ".$row->getSensorID().",";
-					echo "\"value\":".$row->getValue();
-				echo "}";
+				if($row->getValue() != "NAN")
+				{
+					$first = 0;
+					echo "{";
+						echo "\"time\": \"".$row->getTime()->format('c')."\",";
+						echo "\"type\": \"".$row->getType()."\",";
+						echo "\"sensor\": ".$row->getSensorID().",";
+						echo "\"value\":".$row->getValue();
+					echo "}";
+				}
 			}
 			echo "]";
 		}
