@@ -212,7 +212,6 @@
 					break;
 			}
 
-			print_r($selector);
 			return $collection;
 		}
 
