@@ -82,39 +82,20 @@
 
 		public function GetData($selector)
 		{
-			$collection = $this->GetSensorDataCollection();
 
 			// now time to build the query...
 
 			$query = Array();
 		
-			$tblPrefix = "value.";
-			switch($selector->GetAggregation())
-			{
-				case AggregationPeriods::Minute:
-					$collection = $collection -> minutely;
-					break;
+			$tblPrefix = $this->GetTablePrefix($selector);
+			$collection = $this->GetCollection($selector);
 
-				case AggregationPeriods::Hour:
-					$collection = $collection -> hourly;
-					break;
-
-				case AggregationPeriods::Day:
-					$collection = $collection -> daily;
-					break;
-
-				case AggregationPeriods::Month:
-					$collection = $collection -> month;
-					break;
-				
-				default:
-					$tblPrefix = '';
-			}
-
+			
 			if(( $val = $selector->GetDataType() ) != null)
 			{
 				$query["_id.type"] = (string) $val ;
 			}
+
 
 			if(( $val = $selector->GetSensorIdEqualTo() ) != null)
 			{
@@ -174,6 +155,65 @@
 			}
 		
 			return $out;
+		}
+
+		private function GetTablePrefix($selector)
+		{
+			$tblPrefix = "value.";
+
+			switch($selector->GetAggregation())
+			{
+				case AggregationPeriods::Minute:
+					break;
+
+				case AggregationPeriods::Hour:
+					break;
+
+				case AggregationPeriods::Day:
+					break;
+
+				case AggregationPeriods::Month:
+					break;
+
+				default:
+					$tblPrefix = "";
+			}
+
+			return $tblPrefix;
+		}
+
+		private function GetCollection($selector)
+		{
+			$collection = $this->GetSensorDataCollection();
+		
+			if($selector->GetDataType() == "watthoursconsumed")
+			{
+				$collection = $collection -> watthoursconsumed; 
+				$selector->WithDataType ("electricity");
+
+			}
+
+			switch($selector->GetAggregation())
+			{
+				case AggregationPeriods::Minute:
+					$collection = $collection -> minutely;
+					break;
+
+				case AggregationPeriods::Hour:
+					$collection = $collection -> hourly;
+					break;
+
+				case AggregationPeriods::Day:
+					$collection = $collection -> daily;
+					break;
+
+				case AggregationPeriods::Month:
+					$collection = $collection -> month;
+					break;
+			}
+
+			print_r($selector);
+			return $collection;
 		}
 
 	}
